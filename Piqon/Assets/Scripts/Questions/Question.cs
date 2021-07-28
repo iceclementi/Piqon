@@ -9,8 +9,8 @@ public abstract class Question
         this.id = id;
     }
 
-    protected string question;
-    protected Answer answer;
+    private string question;
+    private Answer answer;
 
     public string GetQuestion()
     {
@@ -32,5 +32,5 @@ public abstract class Question
         answer = questionToSet;
     }
 
-    protected abstract string CreateQuestion();
+    public abstract void CreateNewQuestion();
 }

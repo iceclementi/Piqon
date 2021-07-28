@@ -1,30 +1,40 @@
 using System;
-using System.Collections.Generic;
+using PiqonUtils;
+using UnityEngine;
+using Random = System.Random;
 
 public class PrimeFactorisationQuestion : Question
 {
-    private readonly int[] primes = {2, 3, 5, 7, 11, 13, 17, 19, 23};
-    private readonly int[] probabilities = {7, 10, 10, 8, 4, 2, 1};
-    private readonly int minExponents = 3; // Minimum number of exponents
-    private readonly int maxExponents = 10; // Maximum number of exponents
+    public static readonly string TOPIC = "Prime Factorisation";
+    
+    private readonly int[] primes = {2, 3, 5, 7, 11, 13, 17, 19};
+    private readonly int[] probabilities = {16, 36, 30, 20, 12, 4, 1};
+    private const int MIN_EXPONENTS = 3; // Minimum number of exponents
+    private const int MAX_EXPONENTS = 10; // Maximum number of exponents
+    private const long MAX_VALUE = 1000000;
 
     public PrimeFactorisationQuestion() : base(SectionId.NUMBERS, 1)
     {
-        SetQuestion(CreateQuestion());
+        CreateNewQuestion();
     }
 
-    protected sealed override string CreateQuestion()
+    public sealed override void CreateNewQuestion()
     {
-        var number = GenerateNumber();
-        
-        return 
-            $"Express {number} as a product of its prime factors, giving your answer in index notation.";
+        long number;
+        do
+        {
+            number = GenerateNumber();
+        } while (number > MAX_VALUE);
+
+        SetQuestion(
+            $"Express {number} as a product of its prime factors, giving your answer in index notation."
+        );
     }
 
-    private int GenerateNumber()
+    private long GenerateNumber()
     {
-        var number = new ValueTuple<int, string>(0, "");
-        var numberOfExponents = new Random().Next(minExponents, maxExponents);
+        var number = new Pair<long, string>(1, "");
+        var numberOfExponents = new Random().Next(MIN_EXPONENTS, MAX_EXPONENTS);
 
         var currentIndex = 0;
         while (numberOfExponents > 0)
@@ -36,11 +46,11 @@ public class PrimeFactorisationQuestion : Question
             }
             else
             {
-                var exponent = Math.Min(Util.ChooseFromProbability(probabilities), numberOfExponents);
+                var exponent = Math.Min(Utils.ChooseFromProbability(probabilities), numberOfExponents);
 
                 if (exponent > 0)
                 {
-                    ExtendNumber(number, primes[currentIndex], numberOfExponents);
+                    ExtendNumber(number, primes[currentIndex], exponent);
                     numberOfExponents -= exponent;
                 }
 
@@ -48,13 +58,15 @@ public class PrimeFactorisationQuestion : Question
             }
         }
         
-        SetAnswer(new Answer(number.Item2.Substring(1)));
-        return number.Item1;
+        Debug.Log($"{number.First} {number.Second}");
+        
+        SetAnswer(new Answer(number.Second.Substring(1)));
+        return number.First;
     }
 
-    private void ExtendNumber(ValueTuple<int, string> number, int prime, int exponent)
+    private void ExtendNumber(Pair<long, string> number, int prime, int exponent)
     {
-        number.Item1 += (int) Math.Pow(prime, exponent);
-        number.Item2 += $"x{prime}^{exponent}";
+        number.First *= (int) Math.Pow(prime, exponent);
+        number.Second += $"x{prime}^{exponent}";
     }
 }
